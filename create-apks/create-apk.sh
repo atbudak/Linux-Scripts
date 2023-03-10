@@ -104,7 +104,7 @@ change_pavopay_prod(){
     #   PP_PF_APIKEY for PF_APIKEY
     APK_NAME="overpay_${PF_NAME}"
 
-    cp templates/overpay-prod-template.yml created-pf/$APK_NAME-template.yml
+    mkdir -p created-pf && cp templates/overpay-prod-template.yml created-pf/$APK_NAME-template.yml
     sed -i "s:PP_APK_NAME:$APK_NAME:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:PP_PF_NAME:${PF_NAME^}:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:PP_PF_ID:$PF_ID:g" "created-pf/$APK_NAME-template.yml"
@@ -119,7 +119,7 @@ change_pavopay_demo(){
     #   - PD_PF_APIKEY için PF_APIKEY
     APK_NAME="overpay_${PF_NAME}_demo"
 
-    cp templates/overpay-demo-template.yml created-pf/$APK_NAME-template.yml
+    mkdir -p created-pf && cp templates/overpay-demo-template.yml created-pf/$APK_NAME-template.yml
     sed -i "s:PD_APK_NAME:$APK_NAME:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:PD_PF_NAME:${PF_NAME^}:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:PD_PF_ID:$PF_ID:g" "created-pf/$APK_NAME-template.yml"
@@ -135,7 +135,7 @@ change_techpos_prod(){
     #   - TP_PF_APIKEY için PF_APIKEY
     APK_NAME="techpos_${PF_NAME}"
 
-    cp templates/techpos-prod-template.yml created-pf/$APK_NAME-template.yml
+    mkdir -p created-pf && cp templates/techpos-prod-template.yml created-pf/$APK_NAME-template.yml
     sed -i "s:TP_APK_NAME:$APK_NAME:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:TP_PF_NAME:${PF_NAME^}:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:TP_PF_ID:$PF_ID:g" "created-pf/$APK_NAME-template.yml"
@@ -150,7 +150,7 @@ change_techpos_demo(){
     #   - TD_PF_APIKEY için PF_APIKEY
     APK_NAME="techpos_${PF_NAME}_demo"
 
-    cp templates/techpos-demo-template.yml created-pf/$APK_NAME-template.yml
+    mkdir -p created-pf && cp templates/techpos-demo-template.yml created-pf/$APK_NAME-template.yml
     sed -i "s:TD_APK_NAME:$APK_NAME:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:TD_PF_NAME:${PF_NAME^}:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:TD_PF_ID:$PF_ID:g" "created-pf/$APK_NAME-template.yml"
@@ -166,7 +166,7 @@ change_custom_pos_prod(){
     #   - CP_CUSTOM_APP_NAME kullanıcıdan al
     APK_NAME="custom_pos_${PF_NAME}"
 
-    cp templates/custom_pos-prod-template.yml created-pf/$APK_NAME-template.yml
+    mkdir -p created-pf && cp templates/custom_pos-prod-template.yml created-pf/$APK_NAME-template.yml
     sed -i "s:CP_APK_NAME:$APK_NAME:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:CP_PF_NAME:${PF_NAME^}:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:CP_PF_ID:$PF_ID:g" "created-pf/$APK_NAME-template.yml"
@@ -183,7 +183,7 @@ change_custom_pos_demo(){
     #   - CD_CUSTOM_APP_NAME kullanıcıdan al
     APK_NAME="custom_pos_${PF_NAME}_demo"
 
-    cp templates/custom_pos-demo-template.yml created-pf/$APK_NAME-template.yml
+    mkdir -p created-pf && cp templates/custom_pos-demo-template.yml created-pf/$APK_NAME-template.yml
     sed -i "s:CD_APK_NAME:$APK_NAME:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:CD_PF_NAME:${PF_NAME^}:g" "created-pf/$APK_NAME-template.yml"
     sed -i "s:CD_PF_ID:$PF_ID:g" "created-pf/$APK_NAME-template.yml"
