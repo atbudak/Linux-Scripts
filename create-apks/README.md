@@ -8,4 +8,5 @@ Gitlabda bulunan scheduled(on-demand joblar) için otomatik konfigürasyon üret
 
 Pavopay, Techpos, Custom_Pos
 
+Kullanılan güncel versiyon : v1.0.0
   
