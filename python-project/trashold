@@ -1,0 +1,18 @@
+while :; do
+  case $1 in
+  --help | -h)      printf '%s\n' "$(usage)"   || exit 1; exit;;
+  --version)   printf '%s\n' "$version" || exit 1; exit;;
+  -*)     opt="$opt $1"; shift;;
+   *)     break;;
+  esac
+done
+
+for str in ${parameters_list[@]}; do
+  case $str in
+  --help)      printf '%s\n' "$(usage)"   || exit 1; exit;;
+  --cpu)   printf '%s\n' "$version" || exit 1; exit;;
+  -*)     opt="$opt $1"; shift;;
+   *)     break;;
+  esac
+done
+

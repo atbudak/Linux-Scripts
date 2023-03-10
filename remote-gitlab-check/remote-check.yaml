@@ -1,0 +1,82 @@
+variables:
+  CURL_PATH: "https://gitlab.overtech.com.tr/api/v4/projects/79/repository/tree?ref=main"
+
+push_overpay_test:
+  image: registry.overtech.com.tr/overtech/overbase:my_flutter_box_3.0.1_sdk31_ndk_cmake
+  stage: scheduled_jobs_for_repo
+  tags:
+    - shell_runner_mac
+  variables:
+    PUB_CACHE: $CI_PROJECT_DIR/flutter/overpay_pos/.pub-cache
+    # Disable the Gradle daemon for Continuous Integration servers as correctness
+    # is usually a priority over speed in CI environments. Using a fresh
+    # runtime for each build is more reliable since the runtime is completely
+    # isolated from any previous builds.
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false" 
+
+  before_script:
+    - export GRADLE_USER_HOME=$CI_PROJECT_DIR/flutter/overpay_pos/android/.gradle && env | grep -i 'gradle\|pub'
+  script:
+
+    - date_now=$(date "+%F_%H-%M-%S")
+    - versiyon=$(grep version $CI_PROJECT_DIR/flutter/overpay_pos/pubspec.yaml | head -1 | awk '{print $2}')
+
+    - APK_NAME="overpay_pos_${versiyon}_"${date_now}_"commit-id"-${CI_COMMIT_SHORT_SHA}_"branch"-${CI_COMMIT_BRANCH}
+    - APK_FULL_NAME=${APK_NAME}.apk
+    - echo $APK_NAME && echo $APK_FULL_NAME
+    - CURL_NAME="overpay_pos_${versiyon}"
+
+    - echo $CI_PROJECT_DIR
+    - echo $CI_COMMIT_REF_SLUG
+    - echo $CI_JOB_NAME
+    - pwd && cd flutter/overpay_pos && pwd && ls -ltra && flutter doctor -v
+    - ls -ltra android
+
+    - flutter pub get 
+  
+      # App signing...
+    - echo $OVERPAY_POS_KEYSTORE_FILE | base64 -d > $(pwd)/keystore.jks && ls -ltra
+    - flutter build apk --obfuscate --split-per-abi --split-debug-info=build/app/outputs/symbols --dart-define OVERPAY_URL="https://pavopay.pavo.com.tr/api/" --dart-define TECHPOS_HOST_IP="62.244.244.94" --dart-define TECHPOS_INITIAL_MMK=$INITIAL_MMK --dart-define TECHPOS_PUBLIC_KEY=$TECHPOS_PK
+    - pwd && ls -ltra && ls -ltra android && ls -ltra build/app/outputs/flutter-apk/ 
+    - mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk ../../$APK_FULL_NAME && ls -ltra
+
+    #- $ANDROID_SDK_ROOT/build-tools/29.0.2/apksigner verify --print-certs -v ../../overpay_pos.apk
+    - /Users/overtech/Library/Android/sdk/build-tools/29.0.2/apksigner verify --print-certs -v ../../$APK_FULL_NAME # added for mac
+
+    - date && ls -ltra && whoami && pwd 
+    - cd ../../../ && if [[ -d "./$APK_REPO_NAME" ]]; then rm -rf ./$APK_REPO_NAME; fi
+
+        # getting x-total, x-total-pages, x-per-page from header && removes \r from variables
+    - TOTAL_FILES=`curl -sI ${CURL_PATH} | grep "x-total:" | awk '{print $2}'` && TF="${TOTAL_FILES/$'\r'/}"
+    - TOTAL_PAGES=`curl -sI ${CURL_PATH} | grep "x-total-pages:" | awk '{print $2}'` && TP="${TOTAL_PAGES/$'\r'/}"
+    - PER_PAGES=`curl -sI ${CURL_PATH} | grep "x-per-page:" | awk '{print $2}'` && PP="${PER_PAGES/$'\r'/}"
+    - for (( c=1; c<=$TP; c++ ));do curl -s "${CURL_PATH}&page=${c}" | json_pp >> ./read-message.txt ; done
+    - >  # Uploading apk if does not exist on remote
+      echo "Total files(x-total) : $TF"; echo "Total pages(x-total-pages) : $TP"; echo "Total files(x-per-page) : $PP";
+      if grep -q ${CURL_NAME} ./read-message.txt; then 
+        echo "FILE EXISTS :"; grep ${CURL_NAME} ./read-message.txt | head -1; rm -f ./read-message.txt;
+      else
+        echo "FILE NOT EXISTS ON REMOTE!! UPLOADING ... "; git clone -b main --single-branch $APK_REPO && ls -ltra && cd ./$APK_REPO_NAME && git branch
+        cp ../OverPay/*.apk . && zip -m $APK_NAME.zip ./*.apk; git add . && git status && git commit -m "${CI_COMMIT_SHORT_SHA} committed artifact has sent."; git push origin main && rm -rf ../$APK_REPO_NAME; rm -rf ../${APK_NAME}.apk; rm -rf ../read-message.txt;
+      fi
+
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}  #Only use one cache per whole pipeline
+    paths:
+      - flutter/overpay_pos/.pub-cache
+      - flutter/overpay_pos/android/.gradle
+    policy: pull
+
+  artifacts:
+    expire_in: 1 day
+    paths:
+    - overpay_pos_*.apk   # obfuscated (by Proguard) & signed apk file
+   
+  rules:
+    - if: ($CI_COMMIT_BRANCH == "master") && ($CI_PIPELINE_SOURCE == "schedule") && ($SCHEDULE_TYPE == "scheduled_job_for_repo")
+      changes:
+       - flutter/overpay_desk_test/**/*
+       - flutter/overpay_pos/**/*
+       - flutter/receipt_editor/**/*
+       - flutter/techpos_core/**/*
+

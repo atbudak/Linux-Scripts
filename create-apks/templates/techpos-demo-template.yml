@@ -1,0 +1,63 @@
+on demand job for TD_APK_NAME:
+  image: registry.overtech.com.tr/overtech/overbase:my_flutter_box_3.0.1_sdk31_ndk_cmake
+  stage: scheduled_jobs_for_base_images
+  tags:
+    - shell_runner_mac
+  variables:
+    PUB_CACHE: $CI_PROJECT_DIR/flutter/techpos/.pub-cache
+    # Disable the Gradle daemon for Continuous Integration servers as correctness is usually a priority over speed in CI environments. Using a fresh
+    # runtime for each build is more reliable since the runtime is completely isolated from any previous builds.
+    GRADLE_OPTS: "-Dorg.gradle.daemon=false" 
+
+  before_script:
+    - export GRADLE_USER_HOME=$CI_PROJECT_DIR/flutter/techpos/android/.gradle && env | grep -i 'gradle\|pub'
+  script:
+
+    - date_now=$(date "+%F_%H-%M-%S")
+    - versiyon=$(grep version $CI_PROJECT_DIR/flutter/techpos/pubspec.yaml | head -1 | awk '{print $2}')
+
+    - APK_NAME="TD_APK_NAME_${versiyon}_"${date_now}_"commit-id"-${CI_COMMIT_SHORT_SHA}_"branch"-${CI_COMMIT_BRANCH}
+    - APK_FULL_NAME=${APK_NAME}.apk
+
+    - echo $APK_NAME && echo $APK_FULL_NAME
+    - echo $CI_PROJECT_DIR
+    - echo $CI_COMMIT_REF_SLUG
+    - echo $CI_JOB_NAME
+    - pwd && cd flutter/techpos && pwd && ls -ltra && flutter doctor -v
+
+           # Changing app name and package name...
+    - sed -i'.bak' -e 's/dev.overtech.techpos/dev.overtech.TD_APK_NAME/g' android/app/build.gradle && grep applicationId android/app/build.gradle
+
+    - sed -i'.bak' -e 's/BKM TechPOS/BKM TechPOS TD_PF_NAME Demo/g' android/app/src/main/AndroidManifest.xml && grep android:label= android/app/src/main/AndroidManifest.xml
+    - flutter pub get 
+
+      # App signing...
+    - echo $KEYSTORE_FILE | base64 -d > $(pwd)/keystore.jks && ls -ltra
+
+    - flutter build apk --obfuscate --split-per-abi --split-debug-info=build/app/outputs/symbols --dart-define ENVIRONMENT_TYPE="prod" --dart-define BKM_HOST_IP="31.145.171.94" --dart-define PF_ID="TD_PF_ID" --dart-define PF_NAME="TD_PF_NAME" --dart-define PF_URL="https://pfgatewaydemo.overtech.com.tr/api" --dart-define PF_APPTOKEN="7F2DA75B9EFC46A7963D879BAEF32545" --dart-define PF_APIKEY="TD_PF_APIKEY"
+
+  
+    - pwd && ls -ltra && ls -ltra android && ls -ltra build/app/outputs/flutter-apk/ 
+    - mv build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk ../../$APK_FULL_NAME && ls -ltra
+    
+    - /Users/overtech/Library/Android/sdk/build-tools/29.0.2/apksigner verify --print-certs -v ../../$APK_FULL_NAME
+
+  cache:
+    key: techpos
+    paths:
+      - flutter/techpos/.pub-cache
+      - flutter/techpos/android/.gradle
+    policy: pull
+
+  artifacts:
+    expire_in: 1 day
+    paths:
+    - TD_APK_NAME_*.apk   # obfuscated (by Proguard) & signed apk file
+   
+  only:
+    refs:
+      - schedules
+    variables:
+      - $SCHEDULE_TYPE == "on_demand_apk"
+
+  when: manual

@@ -1,0 +1,35 @@
+ubuntu server >>
+
+install springboot
+--
+sudo apt install unzip zip
+curl -s https://get.sdkman.io | bash
+source "/home/username/.sdkman/bin/sdkman-init.sh"=
+sdk install springboot
+spring version
+
+install java
+--
+sudo apt install default-jre -y
+sudo apt install default-jdk -y
+
+
+install maven
+--
+sudo apt install maven
+
+install git
+--
+sudo install git -y
+
+install github repo to local
+--
+https://$TOKEN@github.com/Protein-DevOps-Engineer-Bootcamp/2-hafta-odev-1-git-ADEMBUDAK1983
+
+
+build project
+--
+spring init
+spring install pom.xml
+./mvnw spring-boot:run
+mvn package -X -Dmaven.text.skip # -X olmazsa debug modda çalıştı
