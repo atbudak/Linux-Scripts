@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ACCESS_TOKEN="4Njhsz3myp-r6Yhab3oJ"
+ACCESS_TOKEN=""
 ### apk reposu
 APK_REPO=https://abudak:$ACCESS_TOKEN@gitlab.overtech.com.tr/abudak/overtech-apk-repos.git
 REPO_NAME=overtech-apk-repos
